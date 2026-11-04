@@ -1,0 +1,6 @@
+{"id":"case_001","user_message":"I need 5 industrial pumps.","current_request":null,"expected":{"intent":"new_request","category_key":"industrial_pump","item_name":"industrial pumps","quantity":5}}
+{"id":"case_002","user_message":"Make it 10.","current_request":{"category_key":"industrial_pump","item_name":"industrial pump","quantity":5},"expected":{"intent":"update_request","quantity":10}}
+{"id":"case_003","user_message":"I also need 3 electric motors.","current_request":{"category_key":"industrial_pump","item_name":"industrial pump","quantity":5},"expected":{"intent":"new_request","category_key":"industrial_motor","item_name":"electric motor","quantity":3}}
+{"id":"case_004","user_message":"I need an industrial motor with 220V voltage.","current_request":null,"expected":{"intent":"new_request","category_key":"industrial_motor","attributes":{"voltage":"220V"}}}
+{"id":"case_005","user_message":"I need 4 industrial bearings.","current_request":null,"expected":{"intent":"new_request","category_key":"industrial_bearing","quantity":4}}
+{"id":"case_006","user_message":"What information do you need to order an industrial pump?","current_request":null,"expected":{"intent":"ask_question"}}
