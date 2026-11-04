@@ -46,14 +46,3 @@ def test_extraction_supports_partial_updates():
     assert updates["quantity"] == 5
     assert "category_key" not in updates
     assert "attributes" not in updates
-
-
-def test_extraction_supports_explicit_corrections():
-
-    extraction = RequestExtraction(
-        intent=MessageIntent.UPDATE_REQUEST,
-        quantity=5,
-        correction_fields=["quantity"],
-    )
-
-    assert "quantity" in extraction.correction_fields

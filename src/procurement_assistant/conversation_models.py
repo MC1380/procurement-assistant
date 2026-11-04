@@ -1,6 +1,6 @@
 from enum import Enum
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from datetime import datetime, timezone
 from typing import Literal
@@ -14,45 +14,30 @@ class MessageIntent(str, Enum):
     ASK_QUESTION = "ask_question"
     OTHER = "other"
     UNCLEAR = "unclear"
+    CANCEL_REQUEST = "cancel_request"
 
 
 class RequestExtraction(BaseModel):
-    """
-    Structured information extracted from one user message.
-
-    This model represents updates, not the complete conversation state.
-    """
-
     model_config = ConfigDict(extra="forbid")
 
     intent: MessageIntent
-
     category_key: str | None = None
     item_name: str | None = None
-
-    quantity: int | None = Field(
-        default=None,
-        gt=0,
-    )
-
+    quantity: int | None = Field(default=None, gt=0)
     reason: str | None = None
+    attributes: dict[str, str] = Field(default_factory=dict)
+    ambiguous_fields: list[str] = Field(default_factory=list)
 
-    # Only explicitly mentioned technical attributes.
-    # Values preserve their original units, e.g. "5 kW".
-    attributes: dict[str, str] = Field(
-        default_factory=dict,
-    )
+    @field_validator("intent", mode="before")
+    @classmethod
+    def normalize_intent(cls, value):
+        """Normalize LLM intent output before Enum validation."""
 
-    # Fields the user explicitly wants to correct.
-    correction_fields: list[str] = Field(
-        default_factory=list,
-    )
+        if isinstance(value, str):
+            return value.strip().lower()
 
-    # Fields that need clarification.
-    ambiguous_fields: list[str] = Field(
-        default_factory=list,
-    )
-
+        return value
+        
 class ConversationMessage(BaseModel):
     """A single message exchanged during a conversation."""
 

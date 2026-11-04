@@ -1,33 +1,38 @@
-import operator
 
-from typing import Annotated, TypedDict
+import operator
+from typing import Annotated, NotRequired, TypedDict
 
 from procurement_assistant.conversation_models import (
     ConversationMessage,
     ConversationStatus,
     RequestDraft,
+    RequestExtraction,
 )
 
 
 class ConversationState(TypedDict):
-    """
-    State used by the conversation workflow.
+    """Conversation state for the procurement assistant."""
 
-    Stores conversation history and the current request draft.
-    """
-
+    # Unique identifier for the conversation.
     conversation_id: str
 
-    # New messages are appended instead of replacing history.
+    # Conversation history. LangGraph appends new messages using this reducer.
     messages: Annotated[list[ConversationMessage], operator.add]
 
-    # Latest structured snapshot of the user's request.
+    # Current purchase request.
     request_data: RequestDraft
 
-    # Required information that has not been provided yet.
+    # Information that is still missing from the request.
     missing_information: list[str]
 
-    # Conflicting or ambiguous fields requiring clarification.
+    # Fields that need clarification or confirmation.
     clarification_fields: list[str]
 
+    # Current conversation status.
     status: ConversationStatus
+
+    # Temporary input for the current graph execution.
+    current_user_message: NotRequired[str]
+
+    # Structured information extracted by the LLM.
+    extraction: NotRequired[RequestExtraction | None]

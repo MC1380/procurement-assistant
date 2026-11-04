@@ -101,13 +101,12 @@ def test_confirmed_correction_updates_existing_value():
     assert clarification == []
 
 
-def test_correction_hint_from_llm_is_not_enough():
+def test_conflicting_update_requires_confirmation():
     current_data = {"quantity": 3}
 
     extraction = RequestExtraction(
         intent=MessageIntent.UPDATE_REQUEST,
         quantity=5,
-        correction_fields=["quantity"],
     )
 
     updated, clarification = conversation_service.apply_extraction_update(
@@ -781,7 +780,6 @@ def test_process_user_message_updates_confirmed_quantity_correction(session):
     extraction = RequestExtraction(
         intent=MessageIntent.UPDATE_REQUEST,
         quantity=15,
-        correction_fields=["quantity"],
     )
 
     # Act
@@ -857,7 +855,6 @@ def test_process_user_message_keeps_old_quantity_without_confirmation(session):
     extraction = RequestExtraction(
         intent=MessageIntent.UPDATE_REQUEST,
         quantity=15,
-        correction_fields=["quantity"],
     )
 
     # Act
