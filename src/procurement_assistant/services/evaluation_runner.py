@@ -3,6 +3,13 @@ from time import perf_counter
 
 from langchain_openai import ChatOpenAI
 
+
+from procurement_assistant.config.llm import get_llm_settings
+
+from procurement_assistant.services.evaluation_report_service import (
+    save_evaluation_report,
+)
+
 from procurement_assistant.services.evaluation_dataset_service import (
     load_evaluation_dataset,
 )
@@ -18,6 +25,8 @@ from procurement_assistant.services.evaluation_service import (
 def run_evaluation(
     dataset_path: Path,
     model: ChatOpenAI | None = None,
+    results_dir : Path = Path("data/evaluation/results"),
+    model_name: str | None = None,
 ) -> tuple[dict, list[dict]]:
     """
     Run LLM extraction on every evaluation case
@@ -105,4 +114,17 @@ def run_evaluation(
         3,
     )
 
+    resolved_model_name = (
+        model_name
+        or getattr(model, "model_name", None)
+        or get_llm_settings().model
+    )
+
+    save_evaluation_report(
+        model_name=resolved_model_name,
+        summary=summary,
+        case_results=case_results,
+        results_dir=results_dir,
+    )
+    
     return summary, case_results

@@ -42,8 +42,17 @@ def test_run_evaluation(monkeypatch, tmp_path):
         fake_extract_request,
     )
 
-    summary, case_results = run_evaluation(dataset_path)
+    summary, case_results = run_evaluation(
+        dataset_path,
+        results_dir=tmp_path / "results",
+        model_name="test-model",
+    )
 
+    report_files = list(
+        (tmp_path / "results").glob("*.json")
+    )
+
+    assert len(report_files) == 1
     assert summary["total_cases"] == 1
     assert summary["field_accuracy"] == 1.0
     assert summary["intent_accuracy"] == 1.0
@@ -104,7 +113,11 @@ def test_run_evaluation_continues_after_extraction_failure(
         fake_extract_request,
     )
 
-    summary, case_results = run_evaluation(dataset_path)
+    summary, case_results = run_evaluation(
+        dataset_path,
+        results_dir=tmp_path / "results",
+        model_name="test-model",
+    )
 
     assert summary["total_cases"] == 2
     assert summary["successful_extractions"] == 1
@@ -149,7 +162,11 @@ def test_run_evaluation_when_all_extractions_fail(
         fake_extract_request,
     )
 
-    summary, case_results = run_evaluation(dataset_path)
+    summary, case_results = run_evaluation(
+        dataset_path,
+        results_dir=tmp_path / "results",
+        model_name="test-model",
+    )
 
     assert summary["total_cases"] == 1
     assert summary["successful_extractions"] == 0

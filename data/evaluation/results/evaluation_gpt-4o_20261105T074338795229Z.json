@@ -1,0 +1,165 @@
+{
+    "run_id": "20261105T074338795229Z",
+    "model": "gpt-4o",
+    "timestamp": "2026-11-05T07:43:38.795229+00:00",
+    "summary": {
+        "total_cases": 6,
+        "total_fields": 17,
+        "correct_fields": 16,
+        "field_accuracy": 0.9411764705882353,
+        "intent_accuracy": 1.0,
+        "category_accuracy": 1.0,
+        "category_total": 4,
+        "successful_extractions": 6,
+        "failed_extractions": 0,
+        "structured_output_success_rate": 1.0,
+        "average_latency_seconds": 5.189
+    },
+    "case_results": [
+        {
+            "case_id": "case_001",
+            "structured_output_success": true,
+            "latency_seconds": 10.095,
+            "field_results": {
+                "intent": {
+                    "expected": "new_request",
+                    "actual": "new_request",
+                    "correct": true
+                },
+                "category_key": {
+                    "expected": "industrial_pump",
+                    "actual": "industrial_pump",
+                    "correct": true
+                },
+                "item_name": {
+                    "expected": "industrial pumps",
+                    "actual": null,
+                    "correct": false
+                },
+                "quantity": {
+                    "expected": 5,
+                    "actual": 5,
+                    "correct": true
+                }
+            },
+            "total_fields": 4,
+            "correct_fields": 3,
+            "field_accuracy": 0.75
+        },
+        {
+            "case_id": "case_002",
+            "structured_output_success": true,
+            "latency_seconds": 4.254,
+            "field_results": {
+                "intent": {
+                    "expected": "update_request",
+                    "actual": "update_request",
+                    "correct": true
+                },
+                "quantity": {
+                    "expected": 10,
+                    "actual": 10,
+                    "correct": true
+                }
+            },
+            "total_fields": 2,
+            "correct_fields": 2,
+            "field_accuracy": 1.0
+        },
+        {
+            "case_id": "case_003",
+            "structured_output_success": true,
+            "latency_seconds": 3.818,
+            "field_results": {
+                "intent": {
+                    "expected": "new_request",
+                    "actual": "new_request",
+                    "correct": true
+                },
+                "category_key": {
+                    "expected": "industrial_motor",
+                    "actual": "industrial_motor",
+                    "correct": true
+                },
+                "item_name": {
+                    "expected": "electric motor",
+                    "actual": "electric motor",
+                    "correct": true
+                },
+                "quantity": {
+                    "expected": 3,
+                    "actual": 3,
+                    "correct": true
+                }
+            },
+            "total_fields": 4,
+            "correct_fields": 4,
+            "field_accuracy": 1.0
+        },
+        {
+            "case_id": "case_004",
+            "structured_output_success": true,
+            "latency_seconds": 4.082,
+            "field_results": {
+                "intent": {
+                    "expected": "new_request",
+                    "actual": "new_request",
+                    "correct": true
+                },
+                "category_key": {
+                    "expected": "industrial_motor",
+                    "actual": "industrial_motor",
+                    "correct": true
+                },
+                "attributes.voltage": {
+                    "expected": "220V",
+                    "actual": "220V",
+                    "correct": true
+                }
+            },
+            "total_fields": 3,
+            "correct_fields": 3,
+            "field_accuracy": 1.0
+        },
+        {
+            "case_id": "case_005",
+            "structured_output_success": true,
+            "latency_seconds": 4.19,
+            "field_results": {
+                "intent": {
+                    "expected": "new_request",
+                    "actual": "new_request",
+                    "correct": true
+                },
+                "category_key": {
+                    "expected": "industrial_bearing",
+                    "actual": "industrial_bearing",
+                    "correct": true
+                },
+                "quantity": {
+                    "expected": 4,
+                    "actual": 4,
+                    "correct": true
+                }
+            },
+            "total_fields": 3,
+            "correct_fields": 3,
+            "field_accuracy": 1.0
+        },
+        {
+            "case_id": "case_006",
+            "structured_output_success": true,
+            "latency_seconds": 4.693,
+            "field_results": {
+                "intent": {
+                    "expected": "ask_question",
+                    "actual": "ask_question",
+                    "correct": true
+                }
+            },
+            "total_fields": 1,
+            "correct_fields": 1,
+            "field_accuracy": 1.0
+        }
+    ]
+}
