@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.scripts]
-procurement-assistant = "procurement_assistant:main"
+procurement-assistant = "procurement_assistant.cli:main"
 
 [build-system]
 requires = ["uv_build>=0.11.25,<0.12.0"]
