@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-import procurement_assistant.workflow as workflow
+import procurement_assistant.agent.procurement_graph as workflow
 from procurement_assistant.database.connection import Base
 from procurement_assistant.database.models import InventoryItemDB
 from procurement_assistant.domain.models import PurchaseRequest

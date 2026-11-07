@@ -7,7 +7,7 @@ from langgraph.types import Command
 from sqlalchemy import create_engine, func, select
 from sqlalchemy.orm import sessionmaker
 
-import procurement_assistant.workflow as workflow_module
+import procurement_assistant.agent.procurement_graph as workflow_module
 from procurement_assistant.database.connection import Base
 from procurement_assistant.database.models import InventoryItemDB,PurchaseSuggestionDB
 
@@ -21,8 +21,8 @@ from procurement_assistant.domain.models import (
     SupplierStatus,
     SuggestionStatus,
 )
-from procurement_assistant.state import ProcurementState
-from procurement_assistant.workflow import workflow
+from procurement_assistant.agent.state import ProcurementState
+from procurement_assistant.agent.procurement_graph import workflow
 
 #
 

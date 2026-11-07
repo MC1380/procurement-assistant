@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from procurement_assistant.conversation_state import ConversationState
+from procurement_assistant.agent.conversation_state import ConversationState
 
 from procurement_assistant.domain.conversation_models import RequestExtraction, RequestDraft, ConversationMessage, ConversationStatus
 

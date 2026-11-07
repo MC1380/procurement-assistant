@@ -27,7 +27,7 @@ from procurement_assistant.domain.models import (
     SuggestionStatus
 )
 
-from procurement_assistant.state import ProcurementState
+from procurement_assistant.agent.state import ProcurementState
 
 # Nodes
 
