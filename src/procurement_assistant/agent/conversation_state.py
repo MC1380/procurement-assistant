@@ -1,4 +1,3 @@
-
 import operator
 from typing import Annotated, NotRequired, TypedDict
 
@@ -7,6 +6,7 @@ from procurement_assistant.domain.conversation_models import (
     ConversationStatus,
     RequestDraft,
     RequestExtraction,
+    MessageIntent
 )
 
 
@@ -36,3 +36,9 @@ class ConversationState(TypedDict):
 
     # Structured information extracted by the LLM.
     extraction: NotRequired[RequestExtraction | None]
+
+    # Intent detected in the latest user message.
+    last_intent: NotRequired[MessageIntent]
+
+    # Selected route for the current graph execution.
+    selected_route: NotRequired[str]

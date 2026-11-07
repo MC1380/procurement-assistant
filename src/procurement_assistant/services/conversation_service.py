@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 
 from procurement_assistant.agent.conversation_state import ConversationState
 
-from procurement_assistant.domain.conversation_models import RequestExtraction, RequestDraft, ConversationMessage, ConversationStatus
+from procurement_assistant.domain.conversation_models import RequestExtraction, RequestDraft, ConversationMessage, ConversationStatus, MessageIntent
 
 from procurement_assistant.domain.models import ProductAttribute
 
@@ -229,19 +229,49 @@ def process_user_message(
     Process a new user message and return a partial conversation state update.
     """
 
-    current_data = state["request_data"].model_dump()
+     # Step 1: Identify the message intent.
+    intent = extraction.intent
 
-    # Step 1: Merge newly extracted information.
+    user_message_entry = ConversationMessage(
+        role="user",
+        content=user_message,
+    )
+
+    # Step 2: Handle messages that do not modify purchase data.
+    non_request_intents = {
+        MessageIntent.ASK_QUESTION,
+        MessageIntent.OTHER,
+        MessageIntent.UNCLEAR,
+        MessageIntent.CANCEL_REQUEST,
+    }
+
+    if intent in non_request_intents:
+        return {
+            "messages": [user_message_entry],
+            "last_intent": intent,
+            "request_data": state["request_data"],
+            "missing_information": state["missing_information"],
+            "clarification_fields": state["clarification_fields"],
+            "status": state["status"],
+        }
+
+    # Step 3: Start fresh when a new request is detected.
+    if intent == MessageIntent.NEW_REQUEST:
+        current_data = RequestDraft().model_dump()
+    else:
+        current_data = state["request_data"].model_dump()
+
+    # Step 4: Merge newly extracted information.
     updated_data, new_clarifications = apply_extraction_update(
         current_data=current_data,
         extraction=extraction,
         confirmed_corrections=confirmed_corrections,
     )
 
-    # Step 2: Validate the updated request draft.
+    # Step 5: Validate the updated request draft.
     updated_request = RequestDraft.model_validate(updated_data)
 
-    # Step 3: Find missing general and product-specific information.
+    # Step 6: Find missing general and product-specific information.
     missing_basic_information = find_missing_basic_information(
         updated_request
     )
@@ -257,8 +287,11 @@ def process_user_message(
         )
     )
 
-    # Step 4: Preserve unresolved clarification fields.
-    clarification_fields = set(state["clarification_fields"])
+    # Step 7: Preserve clarifications only for the current request.
+    if intent == MessageIntent.NEW_REQUEST:
+        clarification_fields = set()
+    else:
+        clarification_fields = set(state["clarification_fields"])
 
     clarification_fields.update(new_clarifications)
 
@@ -269,20 +302,16 @@ def process_user_message(
 
     clarification_fields.difference_update(resolved_fields)
 
-    # Step 5: Determine conversation status.
+    # Step 8: Determine conversation status.
     if missing_information or clarification_fields:
         status = ConversationStatus.COLLECTING_INFORMATION
     else:
         status = ConversationStatus.READY_FOR_REVIEW
 
-    # Step 6: Return only the changes.
+    # Step 9: Return only the changes.
     return {
-        "messages": [
-            ConversationMessage(
-                role="user",
-                content=user_message,
-            )
-        ],
+        "messages": [user_message_entry],
+        "last_intent": intent,
         "request_data": updated_request,
         "missing_information": missing_information,
         "clarification_fields": sorted(clarification_fields),

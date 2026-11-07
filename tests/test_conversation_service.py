@@ -869,3 +869,134 @@ def test_process_user_message_keeps_old_quantity_without_confirmation(session):
     assert result["request_data"].quantity == 10
     assert "quantity" in result["clarification_fields"]
     assert result["status"] == ConversationStatus.COLLECTING_INFORMATION
+
+def test_ask_question_preserves_existing_request(session):
+    state = {
+        "conversation_id": "test-question-001",
+        "messages": [],
+        "request_data": RequestDraft(
+            category_key="industrial_pump",
+            item_name="Industrial Pump",
+            quantity=5,
+        ),
+        "missing_information": ["head"],
+        "clarification_fields": [],
+        "status": ConversationStatus.COLLECTING_INFORMATION,
+    }
+
+    extraction = RequestExtraction(
+        intent=MessageIntent.ASK_QUESTION,
+    )
+
+    result = conversation_service.process_user_message(
+        state=state,
+        user_message="What information is required?",
+        extraction=extraction,
+        session=session,
+    )
+
+    assert result["request_data"] == state["request_data"]
+    assert result["missing_information"] == ["head"]
+    assert result["status"] == ConversationStatus.COLLECTING_INFORMATION
+    assert result["last_intent"] == MessageIntent.ASK_QUESTION
+    assert len(result["messages"]) == 1
+
+
+
+def test_new_request_resets_previous_request_data(session):
+    # Arrange: Add the new product category to the test database.
+    session.add(
+        ProductCategoryDB(
+            category_key="industrial_bearing",
+            display_name="Industrial Bearing",
+        )
+    )
+
+    session.add_all([
+        ProductAttributeDB(
+            category_key="industrial_bearing",
+            attribute_key="inner_diameter",
+            display_name="Inner Diameter",
+            is_required=True,
+        ),
+        ProductAttributeDB(
+            category_key="industrial_bearing",
+            attribute_key="outer_diameter",
+            display_name="Outer Diameter",
+            is_required=True,
+        ),
+        ProductAttributeDB(
+            category_key="industrial_bearing",
+            attribute_key="width",
+            display_name="Width",
+            is_required=True,
+        ),
+        ProductAttributeDB(
+            category_key="industrial_bearing",
+            attribute_key="bearing_type",
+            display_name="Bearing Type",
+            is_required=True,
+        ),
+    ])
+
+    session.flush()
+
+    # Previous request: 10 industrial pumps.
+    state = {
+        "conversation_id": "test-new-request-001",
+        "messages": [],
+        "request_data": RequestDraft(
+            category_key="industrial_pump",
+            item_name="Industrial Pump",
+            quantity=10,
+            reason="Replacement",
+            attributes={
+                "flow_rate": "20 L/min",
+                "head": "30 meters",
+                "fluid_type": "Water",
+            },
+        ),
+        "missing_information": [
+            "operating_temperature",
+        ],
+        "clarification_fields": ["quantity"],
+        "status": ConversationStatus.COLLECTING_INFORMATION,
+    }
+
+    # New request: 5 industrial bearings.
+    extraction = RequestExtraction(
+        intent=MessageIntent.NEW_REQUEST,
+        category_key="industrial_bearing",
+        item_name="Industrial Bearing",
+        quantity=5,
+    )
+
+    # Act
+    result = conversation_service.process_user_message(
+        state=state,
+        user_message="I need 5 industrial bearings.",
+        extraction=extraction,
+        session=session,
+    )
+
+    # Assert: New request data must replace the previous request.
+    request = result["request_data"]
+
+    assert request.category_key == "industrial_bearing"
+    assert request.item_name == "Industrial Bearing"
+    assert request.quantity == 5
+
+    # Previous request information must not survive.
+    assert request.reason is None
+    assert request.attributes == {}
+
+    # Missing information must belong to the new product.
+    assert set(result["missing_information"]) == {
+        "inner_diameter",
+        "outer_diameter",
+        "width",
+        "bearing_type",
+    }
+
+    assert result["status"] == ConversationStatus.COLLECTING_INFORMATION
+    assert result["clarification_fields"] == []
