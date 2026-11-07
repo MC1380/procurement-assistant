@@ -1,4 +1,4 @@
-from procurement_assistant.conversation_models import RequestExtraction
+from procurement_assistant.domain.conversation_models import RequestExtraction
 from procurement_assistant.evaluation_models import ExpectedExtraction
 
 

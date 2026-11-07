@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from procurement_assistant.database.models import PurchaseSuggestionDB
-from procurement_assistant.models import (
+from procurement_assistant.domain.models import (
     PurchaseSuggestion,
     SuggestionStatus,
 )

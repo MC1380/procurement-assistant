@@ -5,7 +5,7 @@ from procurement_assistant.database.models import (
     ProductCategoryDB,
     ProductAttributeDB,
 )
-from procurement_assistant.models import ProductAttribute
+from procurement_assistant.domain.models import ProductAttribute
 
 
 def get_product_attributes(

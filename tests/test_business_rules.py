@@ -2,8 +2,8 @@
 from decimal import Decimal
 import pytest
 
-from procurement_assistant.business_rules import validate_purchase_request , calculate_purchase_quantity,evaluate_purchase_request
-from procurement_assistant.models import (
+from procurement_assistant.domain.business_rules import validate_purchase_request , calculate_purchase_quantity,evaluate_purchase_request
+from procurement_assistant.domain.models import (
     BudgetPreference,
     PurchaseRequest,
     Supplier,

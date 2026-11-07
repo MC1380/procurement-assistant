@@ -13,9 +13,9 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.types import interrupt
 from langgraph.checkpoint.memory import InMemorySaver
 
-from procurement_assistant.business_rules import evaluate_purchase_request, calculate_purchase_quantity
+from procurement_assistant.domain.business_rules import evaluate_purchase_request, calculate_purchase_quantity
 
-from procurement_assistant.models import (
+from procurement_assistant.domain.models import (
     DepartmentBudget,
     InventoryItem,
     PurchaseEvaluationStatus,

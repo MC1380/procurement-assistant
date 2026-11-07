@@ -4,7 +4,7 @@ from decimal import Decimal
 import pytest
 from pydantic import ValidationError
 
-from procurement_assistant.models import (
+from procurement_assistant.domain.models import (
     InventoryItem,
     OrderStatus,
     PurchaseOrder,

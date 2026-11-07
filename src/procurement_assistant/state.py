@@ -1,6 +1,6 @@
 from typing import TypedDict
 
-from procurement_assistant.models import (
+from procurement_assistant.domain.models import (
     DepartmentBudget,
     InventoryItem,
     PurchaseEvaluation,

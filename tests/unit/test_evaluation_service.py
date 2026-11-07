@@ -1,4 +1,4 @@
-from procurement_assistant.conversation_models import (
+from procurement_assistant.domain.conversation_models import (
     MessageIntent,
     RequestExtraction,
 )

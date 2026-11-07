@@ -2,7 +2,7 @@ import pytest
 
 from pydantic import ValidationError
 
-from procurement_assistant.conversation_models import (
+from procurement_assistant.domain.conversation_models import (
     ConversationMessage,
     ConversationStatus,
     RequestDraft,

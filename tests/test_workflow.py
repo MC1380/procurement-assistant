@@ -11,7 +11,7 @@ import procurement_assistant.workflow as workflow_module
 from procurement_assistant.database.connection import Base
 from procurement_assistant.database.models import InventoryItemDB,PurchaseSuggestionDB
 
-from procurement_assistant.models import (
+from procurement_assistant.domain.models import (
     DepartmentBudget,
     InventoryItem,
     PurchaseEvaluationStatus,

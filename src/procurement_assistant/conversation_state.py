@@ -2,7 +2,7 @@
 import operator
 from typing import Annotated, NotRequired, TypedDict
 
-from procurement_assistant.conversation_models import (
+from procurement_assistant.domain.conversation_models import (
     ConversationMessage,
     ConversationStatus,
     RequestDraft,

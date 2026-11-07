@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 import procurement_assistant.workflow as workflow
 from procurement_assistant.database.connection import Base
 from procurement_assistant.database.models import InventoryItemDB
-from procurement_assistant.models import PurchaseRequest
+from procurement_assistant.domain.models import PurchaseRequest
 
 
 @pytest.fixture
