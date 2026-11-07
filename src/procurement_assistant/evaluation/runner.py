@@ -6,17 +6,17 @@ from langchain_openai import ChatOpenAI
 
 from procurement_assistant.config.llm import get_llm_settings
 
-from procurement_assistant.services.evaluation_report_service import (
+from procurement_assistant.evaluation.report_service import (
     save_evaluation_report,
 )
 
-from procurement_assistant.services.evaluation_dataset_service import (
+from procurement_assistant.evaluation.dataset_service import (
     load_evaluation_dataset,
 )
 from procurement_assistant.services.llm_extraction_service import (
     extract_request,
 )
-from procurement_assistant.services.evaluation_service import (
+from procurement_assistant.evaluation.metrics_service import (
     evaluate_extraction,
     aggregate_evaluation_results,
 )

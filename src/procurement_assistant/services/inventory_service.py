@@ -3,7 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from procurement_assistant.database.models import InventoryItemDB
-from procurement_assistant.models import InventoryItem
+from procurement_assistant.domain.models import InventoryItem
 
 
 def get_inventory_item(

@@ -1,5 +1,5 @@
 from procurement_assistant.config.llm import get_chat_model
-from procurement_assistant.conversation_models import RequestExtraction, RequestDraft
+from procurement_assistant.domain.conversation_models import RequestExtraction, RequestDraft
 from langchain_openai import ChatOpenAI
 
 

@@ -1,7 +1,7 @@
 
 from decimal import Decimal
 
-from procurement_assistant.models import (
+from procurement_assistant.domain.models import (
     BudgetPreference,
     PurchaseRequest,
     Supplier,

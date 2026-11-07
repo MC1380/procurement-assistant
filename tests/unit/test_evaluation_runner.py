@@ -1,10 +1,10 @@
 import json
 
-from procurement_assistant.conversation_models import (
+from procurement_assistant.domain.conversation_models import (
     MessageIntent,
     RequestExtraction,
 )
-from procurement_assistant.services.evaluation_runner import run_evaluation
+from procurement_assistant.evaluation.runner import run_evaluation
 
 
 def test_run_evaluation(monkeypatch, tmp_path):
@@ -38,7 +38,7 @@ def test_run_evaluation(monkeypatch, tmp_path):
         )
 
     monkeypatch.setattr(
-        "procurement_assistant.services.evaluation_runner.extract_request",
+        "procurement_assistant.evaluation.runner.extract_request",
         fake_extract_request,
     )
 
@@ -109,7 +109,7 @@ def test_run_evaluation_continues_after_extraction_failure(
         )
 
     monkeypatch.setattr(
-        "procurement_assistant.services.evaluation_runner.extract_request",
+        "procurement_assistant.evaluation.runner.extract_request",
         fake_extract_request,
     )
 
@@ -158,7 +158,7 @@ def test_run_evaluation_when_all_extractions_fail(
         raise RuntimeError("Simulated API failure")
 
     monkeypatch.setattr(
-        "procurement_assistant.services.evaluation_runner.extract_request",
+        "procurement_assistant.evaluation.runner.extract_request",
         fake_extract_request,
     )
 

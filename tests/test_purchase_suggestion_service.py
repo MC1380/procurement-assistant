@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
 from procurement_assistant.database.connection import Base
-from procurement_assistant.models import (
+from procurement_assistant.domain.models import (
     PurchaseSuggestion,
     SuggestionStatus,
 )

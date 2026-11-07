@@ -1,7 +1,7 @@
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-
+from uuid import uuid4
 
 def save_evaluation_report(
     model_name: str,
@@ -15,7 +15,7 @@ def save_evaluation_report(
 
     timestamp = datetime.now(timezone.utc)
 
-    run_id = timestamp.strftime("%Y%m%dT%H%M%S%fZ")
+    run_id = f"{timestamp.strftime('%Y%m%dT%H%M%S%fZ')}_{uuid4().hex[:8]}"
 
     report = {
         "run_id": run_id,

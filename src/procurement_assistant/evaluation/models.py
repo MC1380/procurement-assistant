@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field
 
-from procurement_assistant.conversation_models import (
+from procurement_assistant.domain.conversation_models import (
     MessageIntent,
     RequestDraft,
 )

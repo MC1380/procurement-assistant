@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from procurement_assistant.evaluation_models import EvaluationCase
+from procurement_assistant.evaluation.models import EvaluationCase
 
 
 def load_evaluation_dataset(

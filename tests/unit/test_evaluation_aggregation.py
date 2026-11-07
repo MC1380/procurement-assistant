@@ -1,6 +1,6 @@
 import pytest
 
-from procurement_assistant.services.evaluation_service import (
+from procurement_assistant.evaluation.metrics_service import (
     aggregate_evaluation_results,
 )
 
