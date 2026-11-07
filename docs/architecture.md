@@ -8,23 +8,52 @@ All external business systems are simulated. No real purchase is executed.
 
 ## 2. Technology Stack
 
+### Implemented
+
 - **Python:** Core application logic
 - **LangGraph:** Workflow orchestration, conditional routing, and human-in-the-loop
-- **LangChain:** LLM integration, tools, and RAG
-- **MCP:** Standardized access to external and simulated tools
+- **LangChain:** LLM integration and structured information extraction
+- **Pydantic:** Data validation and structured models
 - **SQLite + SQLAlchemy:** Persistent business data
-- **FastAPI:** Backend API
-- **Gradio:** Simple interactive demo
 - **pytest:** Automated testing
 
-## 3. Main Components
+### Planned
 
-- **Domain layer:** Purchase requests, suppliers, budgets, policies, and business rules
-- **Workflow layer:** Purchase evaluation, routing, and manager approval
-- **Data layer:** Persistent storage for business entities
-- **Knowledge layer:** Retrieval of procurement policies and documents
-- **Tool layer:** Simulated inventory and supplier operations, including MCP integration
-- **Interface layer:** Gradio demo and FastAPI endpoints
+- **MCP:** Standardized access to external and simulated tools
+- **FastAPI:** Backend API
+- **Gradio:** Interactive application demo
+
+## 3. Project Structure and Main Components
+
+The application code is organized into the following modules:
+
+- **agent/**: LangGraph workflows and their state definitions.
+- **domain/**: Business models, conversation models, and deterministic business rules.
+- **services/**: Application services for conversation processing, inventory, product knowledge, LLM extraction, and purchase suggestions.
+- **database/**: SQLAlchemy models and database connection management.
+- **evaluation/**: Evaluation datasets, metrics, execution, and report generation.
+- **config/**: LLM and application configuration.
+- **cli.py**: Command-line application entry point.
+
+### Architectural Boundaries
+
+- Domain models are independent of database persistence models.
+- Agent workflows coordinate application services and business logic.
+- Services encapsulate specific application operations.
+- Evaluation modules assess LLM extraction performance independently of the main workflow.
+- External integrations must remain simulated until explicitly implemented and authorized.
+
+### 3.1 Source Code Layout
+
+src/procurement_assistant/
+├── agent/
+├── config/
+├── database/
+├── domain/
+├── evaluation/
+├── services/
+├── cli.py
+└── __init__.py
 
 ## 4. Purchase Workflow
 
@@ -50,7 +79,6 @@ All external business systems are simulated. No real purchase is executed.
 - Keep architecture documentation updated.
 - Add technologies only when they serve a clear project requirement.
 - Production deployment is outside the current scope.
-
 
 ## 7. Conversation Workflow
 
