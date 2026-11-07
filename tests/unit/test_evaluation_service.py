@@ -2,8 +2,8 @@ from procurement_assistant.domain.conversation_models import (
     MessageIntent,
     RequestExtraction,
 )
-from procurement_assistant.evaluation_models import ExpectedExtraction
-from procurement_assistant.services.evaluation_service import (
+from procurement_assistant.evaluation.models import ExpectedExtraction
+from procurement_assistant.evaluation.metrics_service import (
     evaluate_extraction,
 )
 

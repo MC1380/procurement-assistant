@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from procurement_assistant.services.evaluation_runner import (
+from procurement_assistant.evaluation.runner import (
     run_evaluation,
 )
 

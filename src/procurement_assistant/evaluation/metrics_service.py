@@ -1,5 +1,5 @@
 from procurement_assistant.domain.conversation_models import RequestExtraction
-from procurement_assistant.evaluation_models import ExpectedExtraction
+from procurement_assistant.evaluation.models import ExpectedExtraction
 
 
 def evaluate_extraction(

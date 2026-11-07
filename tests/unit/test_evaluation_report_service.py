@@ -1,6 +1,6 @@
 import json
 
-from procurement_assistant.services.evaluation_report_service import (
+from procurement_assistant.evaluation.report_service import (
     save_evaluation_report,
 )
 

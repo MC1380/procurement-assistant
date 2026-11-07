@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from procurement_assistant.services.evaluation_dataset_service import (
+from procurement_assistant.evaluation.dataset_service import (
     load_evaluation_dataset,
 )
 
