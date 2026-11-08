@@ -62,15 +62,26 @@ class RequestDraft(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     sku: str | None = None
-    category_key: str | None = None
-    item_name: str | None = None
+    category_key: str | None = Field(
+        default=None,
+        json_schema_extra={"display_name" : "Product Category"}
+    )
+
+    item_name: str | None = Field(
+        default=None,
+        json_schema_extra={"display_name" : "Product Name"}
+    )
 
     quantity: int | None = Field(
         default=None,
         gt=0,
+        json_schema_extra={"display_name" : "Quantity"}
     )
 
-    reason: str | None = None
+    reason: str | None = Field(
+        default=None,
+        json_schema_extra={"display_name" : "Purchace Reason"}
+    )
 
     attributes: dict[str, str] = Field(
         default_factory=dict,
