@@ -7,7 +7,12 @@ from procurement_assistant.domain.conversation_models import (
     ConversationMessage,
     RequestDraft,
 )
-
+from procurement_assistant.agent.conversation.nodes import (
+    handle_cancellation as handle_cancellation_module,
+)
+from procurement_assistant.domain.conversation_models import (
+    ConversationStatus,
+)
 
 def test_collect_information_node_builds_assistant_message(monkeypatch):
     fake_session = object()
@@ -71,3 +76,49 @@ def test_collect_information_node_builds_assistant_message(monkeypatch):
     assert assistant_message.content == (
         "Please provide the missing information."
     )
+
+
+from procurement_assistant.agent.conversation.nodes import (
+    handle_unrecognized as handle_unrecognized_module,
+)
+
+
+def test_handle_unrecognized_node_returns_guidance_message():
+    state = {}
+
+    result = handle_unrecognized_module.handle_unrecognized_node(state)
+
+    assert "messages" in result
+    assert len(result["messages"]) == 1
+
+    assistant_message = result["messages"][0]
+
+    assert assistant_message.role == "assistant"
+    assert "industrial procurement" in assistant_message.content
+    assert "rephrase your message" in assistant_message.content
+
+
+def test_handle_cancellation_node_resets_request_draft():
+    state = {
+        "request_data": RequestDraft(
+            category_key="industrial_pump",
+            item_name="Industrial Pump",
+            quantity=5,
+            reason="Production",
+            attributes={"flow_rate": "100"},
+        ),
+        "missing_information": ["head"],
+        "clarification_fields": ["quantity"],
+        "status": ConversationStatus.COLLECTING_INFORMATION,
+    }
+
+    result = handle_cancellation_module.handle_cancellation_node(state)
+
+    assert result["request_data"] == RequestDraft()
+    assert result["missing_information"] == []
+    assert result["clarification_fields"] == []
+    assert result["status"] == ConversationStatus.COLLECTING_INFORMATION
+
+    assert len(result["messages"]) == 1
+    assert result["messages"][0].role == "assistant"
+    assert "cancelled" in result["messages"][0].content

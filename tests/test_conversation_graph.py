@@ -264,3 +264,68 @@ def test_graph_prioritizes_question_over_ready_status(monkeypatch):
     result = graph_module.conversation_graph.invoke(initial_state)
 
     assert result["selected_route"] == "answer_question"
+
+
+def test_graph_routes_unrecognized_message_to_handler():
+    """The graph should execute the real unrecognized message node."""
+
+    initial_state = {
+        "conversation_id": "unrecognized-test-1",
+        "messages": [],
+        "request_data": RequestDraft(),
+        "missing_information": [],
+        "clarification_fields": [],
+        "status": ConversationStatus.COLLECTING_INFORMATION,
+        "current_user_message": "Tell me a joke.",
+        "extraction": RequestExtraction.model_construct(
+            intent=MessageIntent.OTHER,
+        ),
+    }
+
+    result = graph_module.conversation_graph.invoke(initial_state)
+
+    assert len(result["messages"]) == 2
+
+    assert result["messages"][0].role == "user"
+    assert result["messages"][0].content == "Tell me a joke."
+
+    assert result["messages"][1].role == "assistant"
+    assert result["messages"][1].content == (
+        "I'm here to help with industrial procurement. "
+        "You can ask about products, create or update a purchase request, "
+        "provide missing information, or cancel an existing request. "
+        "Could you rephrase your message in that context?"
+    )
+
+
+def test_conversation_graph_handles_cancellation():
+    initial_state = {
+        "conversation_id": "cancellation-test-1",
+        "messages": [],
+        "request_data": RequestDraft(
+            category_key="industrial_pump",
+            item_name="Industrial Pump",
+            quantity=5,
+            reason="Production",
+            attributes={"flow_rate": "100"},
+        ),
+        "missing_information": ["head"],
+        "clarification_fields": ["quantity"],
+        "status": ConversationStatus.COLLECTING_INFORMATION,
+        "current_user_message": "Cancel my request.",
+        "extraction": RequestExtraction.model_construct(
+            intent=MessageIntent.CANCEL_REQUEST,
+        ),
+    }
+
+    result = graph_module.conversation_graph.invoke(initial_state)
+
+    assert result["request_data"] == RequestDraft()
+    assert result["missing_information"] == []
+    assert result["clarification_fields"] == []
+    assert result["status"] == ConversationStatus.COLLECTING_INFORMATION
+
+    assert len(result["messages"]) == 2
+    assert result["messages"][0].role == "user"
+    assert result["messages"][1].role == "assistant"
+    assert "cancelled" in result["messages"][1].content.lower()

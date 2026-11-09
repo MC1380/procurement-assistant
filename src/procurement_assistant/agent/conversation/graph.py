@@ -8,6 +8,12 @@ from procurement_assistant.agent.conversation.nodes.collect_information import (
 from procurement_assistant.agent.conversation.nodes.process_message import (
     process_message_node,
 )
+from procurement_assistant.agent.conversation.nodes.handle_unrecognized import (
+    handle_unrecognized_node,
+)
+from procurement_assistant.agent.conversation.nodes.handle_cancellation import (
+    handle_cancellation_node,
+)
 from procurement_assistant.agent.conversation.router import route_conversation
 from procurement_assistant.agent.conversation.state import ConversationState
 
@@ -38,7 +44,10 @@ for route in routes:
 
     if route == "collect_information":
         builder.add_node(route, collect_information_node)
-
+    elif route == "handle_unrecognized":
+        builder.add_node(route, handle_unrecognized_node)
+    elif route == "handle_cancellation":
+        builder.add_node(route, handle_cancellation_node)
     else:
         builder.add_node(route, create_route_node(route))
 
