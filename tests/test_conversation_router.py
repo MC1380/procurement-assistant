@@ -1,6 +1,6 @@
 import pytest
 
-from procurement_assistant.agent.conversation_router import (
+from procurement_assistant.agent.conversation.router import (
     route_conversation,
 )
 from procurement_assistant.domain.conversation_models import (

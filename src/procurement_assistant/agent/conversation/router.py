@@ -3,7 +3,7 @@
 
 from typing import Literal
 
-from procurement_assistant.agent.conversation_state import ConversationState
+from procurement_assistant.agent.conversation.state import ConversationState
 from procurement_assistant.domain.conversation_models import (
     ConversationStatus,
     MessageIntent,

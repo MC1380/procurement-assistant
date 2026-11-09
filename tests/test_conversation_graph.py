@@ -1,7 +1,7 @@
 import pytest
 from contextlib import contextmanager
 
-from procurement_assistant.agent import conversation_graph as graph_module
+from procurement_assistant.agent.conversation import graph as graph_module
 from procurement_assistant.domain.conversation_models import (
     ConversationMessage,
     ConversationStatus,
@@ -9,7 +9,9 @@ from procurement_assistant.domain.conversation_models import (
     RequestDraft,
     RequestExtraction,
 )
-
+from procurement_assistant.agent.conversation.nodes import (
+    process_message as process_message_module,
+)
 
 def test_conversation_graph_processes_user_message(monkeypatch):
     """Test that the graph delegates message processing to the service."""
@@ -24,7 +26,7 @@ def test_conversation_graph_processes_user_message(monkeypatch):
 
     # Replace the real database session factory.
     monkeypatch.setattr(
-        graph_module,
+        process_message_module,
         "SessionLocal",
         fake_session_local,
     )
@@ -56,7 +58,7 @@ def test_conversation_graph_processes_user_message(monkeypatch):
         }
 
     monkeypatch.setattr(
-        graph_module,
+        process_message_module,
         "process_user_message",
         fake_process_user_message,
     )
@@ -95,7 +97,7 @@ def test_conversation_graph_rejects_missing_user_message(monkeypatch):
     """The graph must reject an empty user message."""
 
     monkeypatch.setattr(
-        graph_module,
+        process_message_module,
         "SessionLocal",
         lambda: pytest.fail("Session should not be created."),
     )
@@ -124,7 +126,7 @@ def test_conversation_graph_rejects_missing_extraction(monkeypatch):
     """The graph must reject a missing extraction."""
 
     monkeypatch.setattr(
-        graph_module,
+        process_message_module,
         "SessionLocal",
         lambda: pytest.fail("Session should not be created."),
     )
@@ -154,7 +156,7 @@ def test_graph_routes_question_to_answer_question(monkeypatch):
         yield fake_session
 
     monkeypatch.setattr(
-        graph_module,
+        process_message_module,
         "SessionLocal",
         fake_session_local,
     )
@@ -180,7 +182,7 @@ def test_graph_routes_question_to_answer_question(monkeypatch):
         }
 
     monkeypatch.setattr(
-        graph_module,
+        process_message_module,
         "process_user_message",
         fake_process_user_message,
     )
@@ -213,7 +215,7 @@ def test_graph_prioritizes_question_over_ready_status(monkeypatch):
         yield fake_session
 
     monkeypatch.setattr(
-        graph_module,
+        process_message_module,
         "SessionLocal",
         fake_session_local,
     )
@@ -239,7 +241,7 @@ def test_graph_prioritizes_question_over_ready_status(monkeypatch):
         }
 
     monkeypatch.setattr(
-        graph_module,
+        process_message_module,
         "process_user_message",
         fake_process_user_message,
     )

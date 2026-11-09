@@ -12,7 +12,7 @@ from sqlalchemy.orm import sessionmaker
 
 from unittest.mock import Mock
 
-from procurement_assistant.agent.conversation_state import ConversationState
+from procurement_assistant.agent.conversation.state import ConversationState
 
 from procurement_assistant.domain.models import ProductAttribute
 from procurement_assistant.domain.conversation_models import (
