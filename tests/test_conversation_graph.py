@@ -12,6 +12,9 @@ from procurement_assistant.domain.conversation_models import (
 from procurement_assistant.agent.conversation.nodes import (
     process_message as process_message_module,
 )
+from procurement_assistant.agent.conversation.nodes import (
+    answer_inventory_question as answer_inventory_question_module,
+)
 
 def test_conversation_graph_processes_user_message(monkeypatch):
     """Test that the graph delegates message processing to the service."""
@@ -31,6 +34,11 @@ def test_conversation_graph_processes_user_message(monkeypatch):
         fake_session_local,
     )
 
+    monkeypatch.setattr(
+        answer_inventory_question_module,
+        "SessionLocal",
+        fake_session_local,
+    )
     # Replace the service to isolate the graph node.
     def fake_process_user_message(
         state,
@@ -57,10 +65,24 @@ def test_conversation_graph_processes_user_message(monkeypatch):
             "status": ConversationStatus.COLLECTING_INFORMATION,
         }
 
+    def fake_answer_inventory_question(request_data, session):
+        captured["request_data"] = request_data
+        captured["session"] = session
+
+        return ConversationMessage(
+            role="assistant",
+            content="Available quantity: 10",
+        )
+
     monkeypatch.setattr(
         process_message_module,
         "process_user_message",
         fake_process_user_message,
+    )
+    monkeypatch.setattr(
+        answer_inventory_question_module,
+        "answer_inventory_question",
+        fake_answer_inventory_question,
     )
 
     extraction = RequestExtraction.model_construct(
@@ -89,7 +111,7 @@ def test_conversation_graph_processes_user_message(monkeypatch):
 
     # Verify the graph returned the expected state update.
     assert result["last_intent"] == MessageIntent.ASK_QUESTION
-    assert len(result["messages"]) == 1
+    assert len(result["messages"]) == 2
     assert result["messages"][0].content == initial_state["current_user_message"]
 
 
@@ -150,13 +172,20 @@ def test_conversation_graph_rejects_missing_extraction(monkeypatch):
 
 def test_graph_routes_question_to_answer_question(monkeypatch):
     fake_session = object()
+    captured = {}
 
     @contextmanager
     def fake_session_local():
         yield fake_session
 
+    # Patch the database session for both nodes.
     monkeypatch.setattr(
         process_message_module,
+        "SessionLocal",
+        fake_session_local,
+    )
+    monkeypatch.setattr(
+        answer_inventory_question_module,
         "SessionLocal",
         fake_session_local,
     )
@@ -178,13 +207,27 @@ def test_graph_routes_question_to_answer_question(monkeypatch):
             "request_data": state["request_data"],
             "missing_information": [],
             "clarification_fields": [],
-            "status": ConversationStatus.READY_FOR_REVIEW,
+            "status": ConversationStatus.COLLECTING_INFORMATION,
         }
+
+    def fake_answer_inventory_question(request_data, session):
+        captured["request_data"] = request_data
+        captured["session"] = session
+
+        return ConversationMessage(
+            role="assistant",
+            content="Available quantity: 10",
+        )
 
     monkeypatch.setattr(
         process_message_module,
         "process_user_message",
         fake_process_user_message,
+    )
+    monkeypatch.setattr(
+        answer_inventory_question_module,
+        "answer_inventory_question",
+        fake_answer_inventory_question,
     )
 
     extraction = RequestExtraction.model_construct(
@@ -194,21 +237,28 @@ def test_graph_routes_question_to_answer_question(monkeypatch):
     initial_state = {
         "conversation_id": "routing-test-1",
         "messages": [],
-        "request_data": RequestDraft(),
+        "request_data": RequestDraft(sku="MOTOR-001"),
         "missing_information": [],
         "clarification_fields": [],
         "status": ConversationStatus.COLLECTING_INFORMATION,
-        "current_user_message": "What is the price?",
+        "current_user_message": "What is the available quantity?",
         "extraction": extraction,
     }
 
     result = graph_module.conversation_graph.invoke(initial_state)
 
-    assert result["selected_route"] == "answer_question"
+    assert captured["request_data"].sku == "MOTOR-001"
+    assert captured["session"] is fake_session
+
+    assert len(result["messages"]) == 2
+    assert result["messages"][0].role == "user"
+    assert result["messages"][1].role == "assistant"
+    assert result["messages"][1].content == "Available quantity: 10"
 
 
 def test_graph_prioritizes_question_over_ready_status(monkeypatch):
     fake_session = object()
+    captured = {}
 
     @contextmanager
     def fake_session_local():
@@ -216,6 +266,11 @@ def test_graph_prioritizes_question_over_ready_status(monkeypatch):
 
     monkeypatch.setattr(
         process_message_module,
+        "SessionLocal",
+        fake_session_local,
+    )
+    monkeypatch.setattr(
+        answer_inventory_question_module,
         "SessionLocal",
         fake_session_local,
     )
@@ -239,12 +294,26 @@ def test_graph_prioritizes_question_over_ready_status(monkeypatch):
             "clarification_fields": [],
             "status": ConversationStatus.READY_FOR_REVIEW,
         }
+    def fake_answer_inventory_question(request_data, session):
+        captured["request_data"] = request_data
+        captured["session"] = session
+
+        return ConversationMessage(
+            role="assistant",
+            content="Available quantity: 10",
+        )
 
     monkeypatch.setattr(
         process_message_module,
         "process_user_message",
         fake_process_user_message,
     )
+    monkeypatch.setattr(
+        answer_inventory_question_module,
+        "answer_inventory_question",
+        fake_answer_inventory_question,
+    )
+
 
     extraction = RequestExtraction.model_construct(
         intent=MessageIntent.ASK_QUESTION,
@@ -263,8 +332,9 @@ def test_graph_prioritizes_question_over_ready_status(monkeypatch):
 
     result = graph_module.conversation_graph.invoke(initial_state)
 
-    assert result["selected_route"] == "answer_question"
-
+    assert len(result["messages"]) == 2
+    assert result["messages"][1].role == "assistant"
+    assert result["messages"][1].content == "Available quantity: 10"
 
 def test_graph_routes_unrecognized_message_to_handler():
     """The graph should execute the real unrecognized message node."""

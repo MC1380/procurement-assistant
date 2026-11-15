@@ -151,3 +151,28 @@ def test_answer_inventory_question_with_zero_quantity(session):
     assert result.role == "assistant"
     assert "MOTOR-003" in result.content
     assert "Available quantity: 0" in result.content
+
+def test_sku_has_priority_over_item_name(session):
+    add_inventory_item(
+        session,
+        sku="MOTOR-001",
+        name="Industrial Motor",
+        available_quantity=10,
+    )
+    add_inventory_item(
+        session,
+        sku="PUMP-001",
+        name="Industrial Pump",
+        available_quantity=5,
+    )
+
+    request_data = RequestDraft(
+        sku="MOTOR-001",
+        item_name="Industrial Pump",
+    )
+
+    result = answer_inventory_question(request_data, session)
+
+    assert "MOTOR-001" in result.content
+    assert "Industrial Motor" in result.content
+    assert "Industrial Pump" not in result.content

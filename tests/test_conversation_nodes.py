@@ -13,6 +13,13 @@ from procurement_assistant.agent.conversation.nodes import (
 from procurement_assistant.domain.conversation_models import (
     ConversationStatus,
 )
+from procurement_assistant.agent.conversation.nodes import (
+    answer_inventory_question as answer_inventory_question_module,
+)
+from procurement_assistant.agent.conversation.nodes import (
+    handle_unrecognized as handle_unrecognized_module,
+)
+
 
 def test_collect_information_node_builds_assistant_message(monkeypatch):
     fake_session = object()
@@ -77,12 +84,6 @@ def test_collect_information_node_builds_assistant_message(monkeypatch):
         "Please provide the missing information."
     )
 
-
-from procurement_assistant.agent.conversation.nodes import (
-    handle_unrecognized as handle_unrecognized_module,
-)
-
-
 def test_handle_unrecognized_node_returns_guidance_message():
     state = {}
 
@@ -122,3 +123,55 @@ def test_handle_cancellation_node_resets_request_draft():
     assert len(result["messages"]) == 1
     assert result["messages"][0].role == "assistant"
     assert "cancelled" in result["messages"][0].content
+
+def test_answer_inventory_question_node_returns_assistant_message(
+    monkeypatch,
+):
+    fake_session = object()
+    captured = {}
+
+    @contextmanager
+    def fake_session_local():
+        try:
+            yield fake_session
+        finally:
+            captured["session_closed"] = True
+
+    monkeypatch.setattr(
+        answer_inventory_question_module,
+        "SessionLocal",
+        fake_session_local,
+    )
+
+    def fake_answer_inventory_question(request_data, session):
+        captured["request_data"] = request_data
+        captured["session"] = session
+
+        return ConversationMessage(
+            role="assistant",
+            content="Available quantity: 10",
+        )
+
+    monkeypatch.setattr(
+        answer_inventory_question_module,
+        "answer_inventory_question",
+        fake_answer_inventory_question,
+    )
+
+    request_data = RequestDraft(sku="MOTOR-001")
+
+    state = {
+        "request_data": request_data,
+    }
+
+    result = answer_inventory_question_module.answer_inventory_question_node(
+        state
+    )
+
+    assert captured["request_data"] == request_data
+    assert captured["session"] is fake_session
+    assert captured["session_closed"] is True
+
+    assert len(result["messages"]) == 1
+    assert result["messages"][0].role == "assistant"
+    assert result["messages"][0].content == "Available quantity: 10"
