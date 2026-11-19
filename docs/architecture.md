@@ -16,13 +16,15 @@ All external business systems are simulated. No real purchase is executed.
 - **Pydantic:** Data validation and structured models
 - **SQLite + SQLAlchemy:** Persistent business data
 - **pytest:** Automated testing
-
+- **PyYAML:** YAML frontmatter parsing for document metadata
+- **LangChain Text Splitters + tiktoken:** Structure-aware document chunking and token counting
 ### Planned
 
 - **MCP:** Standardized access to external and simulated tools
 - **FastAPI:** Backend API
 - **Gradio:** Interactive application demo
-
+- **ChromaDB:** Vector storage and semantic retrieval
+- **Embedding Models:** Convert document chunks into vector representations
 ## 3. Project Structure and Main Components
 
 The application code is organized into the following modules:
@@ -51,6 +53,8 @@ src/procurement_assistant/
 ├── database/
 ├── domain/
 ├── evaluation/
+├── rag/
+│   └── ingestion/
 ├── services/
 ├── cli.py
 └── __init__.py
@@ -157,3 +161,72 @@ subsequent development step.
 A request marked `READY_FOR_REVIEW` means the required information
 has been collected. It does not mean that the purchase is approved
 or executed.
+
+## 8. Retrieval-Augmented Generation (RAG)
+
+The RAG subsystem provides access to technical product knowledge and supporting procurement documents.
+
+It is designed to support two knowledge scopes:
+
+- **Category Knowledge:** General technical knowledge about product categories, such as industrial motors, pumps, and bearings.
+- **Product-Specific Knowledge:** Technical information associated with a specific product or SKU, such as datasheets and product manuals.
+
+Both knowledge scopes share the same ingestion and retrieval architecture. Metadata is used to distinguish their scope and support filtering.
+
+### 8.1 Document Ingestion
+
+The ingestion pipeline transforms source documents into structured chunks suitable for embedding and retrieval.
+
+The initial implementation includes:
+
+- `MarkdownDocumentLoader`: Reads Markdown documents, parses YAML frontmatter, validates metadata, and calculates a SHA-256 content hash.
+- `DocumentMetadata`: Defines the structured metadata associated with each source document.
+- `LoadedDocument`: Represents a validated source document.
+- `DocumentProcessor`: Splits documents into semantically meaningful sections and smaller chunks.
+
+### 8.2 Chunking Strategy
+
+The processor uses a two-stage strategy:
+
+1. `MarkdownHeaderTextSplitter` separates documents according to their heading structure.
+2. `RecursiveCharacterTextSplitter` splits sections that exceed the configured token limit.
+
+The initial configuration uses:
+
+- Chunk size: 500 tokens
+- Chunk overlap: 75 tokens
+
+These values are experimental baselines and will be evaluated against retrieval quality.
+
+Each chunk preserves its source document metadata, section path, and sequential chunk index.
+
+### 8.3 Knowledge Sources and Trust
+
+Documents are stored under:
+
+- `data/documents/category/`
+- `data/documents/product_specific/`
+
+Document metadata identifies the knowledge type, source type, and verification status.
+
+Synthetic or unverified documents must not be treated as authoritative technical specifications or used for real industrial purchasing and safety decisions.
+
+### 8.4 Planned RAG Components
+
+The following components are not implemented yet:
+
+- Embedding generation
+- Vector storage and semantic retrieval using ChromaDB
+- Document lifecycle registry
+- Safe document version replacement
+- Retrieval evaluation
+
+### 8.5 Retrieval and Data Boundaries
+
+Structured business information, such as inventory quantities, remains the responsibility of the relational database.
+
+Technical knowledge contained in documents is retrieved through RAG.
+
+Product-specific specifications must be supported by product-specific sources. General category knowledge must not be used to invent missing specifications for an individual product.
+
+For questions requiring both structured business data and technical knowledge, the application may combine database queries and document retrieval.
