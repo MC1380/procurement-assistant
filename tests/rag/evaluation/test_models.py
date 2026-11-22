@@ -6,6 +6,7 @@ from procurement_assistant.rag.evaluation.models import (
     ExpectedEvidence,
     RetrievalEvaluationCase,
     RetrievedChunk,
+    ResolvedGroundTruth
 )
 
 
@@ -54,3 +55,37 @@ def test_retrieved_chunk_allows_missing_score():
 
     assert chunk.score is None
     assert chunk.rank == 1
+
+
+def test_resolved_ground_truth_accepts_valid_data():
+    ground_truth = ResolvedGroundTruth(
+        case_id="motor_voltage_001",
+        relevant_chunk_ids={"chunk_001", "chunk_002"},
+    )
+
+    assert ground_truth.case_id == "motor_voltage_001"
+    assert ground_truth.relevant_chunk_ids == {"chunk_001", "chunk_002"}
+
+
+def test_resolved_ground_truth_requires_case_id():
+    with pytest.raises(ValidationError):
+        ResolvedGroundTruth(
+            relevant_chunk_ids={"chunk_001"},
+        )
+
+
+def test_resolved_ground_truth_requires_at_least_one_chunk():
+    with pytest.raises(ValidationError):
+        ResolvedGroundTruth(
+            case_id="motor_voltage_001",
+            relevant_chunk_ids=set(),
+        )
+
+
+def test_resolved_ground_truth_removes_duplicate_chunk_ids():
+    ground_truth = ResolvedGroundTruth(
+        case_id="motor_voltage_001",
+        relevant_chunk_ids=["chunk_001", "chunk_001", "chunk_002"],
+    )
+
+    assert ground_truth.relevant_chunk_ids == {"chunk_001", "chunk_002"}

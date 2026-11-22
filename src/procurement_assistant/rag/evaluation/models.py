@@ -30,3 +30,12 @@ class RetrievedChunk(BaseModel):
     text: str = Field(min_length=1)
     score: float | None = None
     rank: int = Field(gt=0)
+
+
+class ResolvedGroundTruth(BaseModel):
+    """Represents resolved relevant chunks for an evaluation case."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    case_id: str
+    relevant_chunk_ids: set[str] = Field(min_length=1)
