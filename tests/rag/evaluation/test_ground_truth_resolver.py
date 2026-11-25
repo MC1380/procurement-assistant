@@ -52,7 +52,7 @@ def test_resolve_returns_matching_chunk_id():
 
     assert result.case_id == "motor_voltage_001"
     assert result.relevant_chunk_ids == {
-        "DS-MOTOR-001:0"
+        chunks[0].chunk_id
     }
 
 
@@ -97,8 +97,7 @@ def test_resolve_returns_all_chunks_containing_same_evidence():
     result = resolver.resolve(case, chunks)
 
     assert result.relevant_chunk_ids == {
-        "DS-MOTOR-001:0",
-        "DS-MOTOR-001:1",
+    chunk.chunk_id for chunk in chunks
     }
 
 
@@ -147,8 +146,7 @@ def test_resolve_combines_chunks_for_multiple_evidence():
     result = resolver.resolve(case, chunks)
 
     assert result.relevant_chunk_ids == {
-        "DS-MOTOR-001:0",
-        "DS-MOTOR-001:1",
+        chunk.chunk_id for chunk in chunks
     }
 
 
@@ -195,7 +193,7 @@ def test_resolve_deduplicates_chunk_ids_for_multiple_evidence():
     result = resolver.resolve(case, chunks)
 
     assert result.relevant_chunk_ids == {
-        "DS-MOTOR-001:0"
+        chunks[0].chunk_id
     }
 
 

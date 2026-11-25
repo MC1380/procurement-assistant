@@ -34,7 +34,17 @@ class DocumentChunk(BaseModel):
     content: str = Field(min_length=1)
     metadata: DocumentMetadata
     section: str | None = None
-    chunk_index: int = Field(ge=0)
+    chunk_index: int = Field(ge=0) 
+       
+    @property
+    def chunk_id(self) -> str:
+        """Return a deterministic, version-aware chunk identifier."""
+        return (
+            f"{self.metadata.document_id}:"
+            f"{self.metadata.document_version}:"
+            f"{self.chunk_index}"
+        )
+
 
 
 class ChunkingConfig(BaseModel):

@@ -6,7 +6,7 @@ from procurement_assistant.rag.evaluation.models import (
     ExpectedEvidence,
     RetrievalEvaluationCase,
     RetrievedChunk,
-    ResolvedGroundTruth
+    ResolvedGroundTruth,
 )
 
 

@@ -39,7 +39,7 @@ class GroundTruthResolver:
                 )
 
             relevant_chunk_ids.update(
-                f"{chunk.metadata.document_id}:{chunk.chunk_index}"
+                chunk.chunk_id
                 for chunk in matching_chunks
             )
 
