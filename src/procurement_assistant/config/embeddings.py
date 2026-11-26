@@ -1,6 +1,10 @@
 from functools import lru_cache
 
+from langchain_core.embeddings import Embeddings
+from langchain_openai import OpenAIEmbeddings
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from procurement_assistant.config.providers import get_openai_settings
 
 
 class EmbeddingSettings(BaseSettings):
@@ -20,3 +24,16 @@ class EmbeddingSettings(BaseSettings):
 def get_embedding_settings() -> EmbeddingSettings:
     """Load and cache embedding configuration."""
     return EmbeddingSettings()
+
+
+def get_embedding_model() -> Embeddings:
+    """Create an OpenAI embedding model using centralized settings."""
+
+    embedding_settings = get_embedding_settings()
+    openai_settings = get_openai_settings()
+
+    return OpenAIEmbeddings(
+        model=embedding_settings.model,
+        api_key=openai_settings.api_key.get_secret_value(),
+        base_url=openai_settings.base_url,
+    )
