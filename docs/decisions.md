@@ -1,6 +1,6 @@
 # ProcureFlow AI — Architecture Decision Log
 
-This file records durable architectural decisions and their rationale. Add a new dated decision when a choice materially affects system boundaries, dependencies, safety, or long-term maintainability.
+This log records durable decisions that affect system boundaries, dependencies, safety, or long-term maintainability. Add a dated decision when a new choice materially affects the architecture.
 
 ## ADR-001 — Deterministic business rules remain authoritative
 
@@ -19,7 +19,7 @@ LLM output is probabilistic. Business constraints and authorization decisions mu
 - Keep business rules outside prompts and model-generated decisions.
 - Validate tool inputs and outputs.
 - Test rule boundaries independently from LLM behavior.
-- Require the appropriate human approval for sensitive operations.
+- Require appropriate human approval for sensitive operations.
 
 ## ADR-002 — Conversation collection and procurement execution are separate responsibilities
 
@@ -36,12 +36,12 @@ Separating interaction management from business execution reduces coupling and m
 **Consequences**
 
 - Keep conversation state and procurement decision state conceptually distinct.
-- Pass validated structured request data between the workflows.
+- Pass validated structured request data between workflows.
 - A request being ready for review does not imply approval or execution.
 
 ## ADR-003 — SQLite is the initial business-data store
 
-**Status:** Accepted for the current project scope
+**Status:** Accepted for current project scope
 
 **Decision**
 
@@ -49,7 +49,7 @@ Use SQLite with SQLAlchemy for the initial simulated procurement database.
 
 **Rationale**
 
-SQLite is sufficient for the current single-application educational and portfolio scope, keeps local development simple, and allows focus on agent behavior and software architecture.
+SQLite is sufficient for the current local educational and portfolio scope, keeps development simple, and allows focus on agent behavior and software architecture.
 
 **Consequences**
 
@@ -67,7 +67,7 @@ The project does not create real purchase orders, payments, or supplier transact
 
 **Rationale**
 
-The project is a portfolio and learning system. Safe simulation allows realistic workflow design without causing real-world financial or operational effects.
+Simulation enables realistic workflow design without real-world financial or operational effects.
 
 **Consequences**
 
@@ -85,7 +85,7 @@ Relational database queries remain the source for structured operational facts s
 
 **Rationale**
 
-A vector search is not a substitute for exact queries over structured business data. Separating the paths improves correctness and makes retrieval behavior easier to evaluate.
+Vector search is not a substitute for exact queries over structured business data. Separating the paths improves correctness and makes retrieval behavior easier to evaluate.
 
 **Consequences**
 
@@ -111,6 +111,27 @@ A portfolio project should demonstrate sound engineering decisions, not the numb
 - Explain the problem and trade-offs before adding a dependency.
 - Prefer the simplest design that meets current requirements.
 - Revisit decisions when scale, reliability, security, or deployment requirements change.
+
+## ADR-007 — Separate provider connection settings from embedding-model settings
+
+**Date:** 2026-11-28
+
+**Status:** Accepted
+
+**Decision**
+
+Keep shared provider connection settings (such as API credentials and base URL) separate from embedding-specific model settings. The embedding-model factory composes these settings when constructing the provider implementation.
+
+**Rationale**
+
+Provider connectivity and model selection are different configuration responsibilities. Separating them avoids coupling embedding configuration to chat-model concerns while still allowing connection details to be reused.
+
+**Consequences**
+
+- Keep provider credentials in centralized secret-aware configuration.
+- Keep embedding model selection under embedding-specific settings.
+- Inject the LangChain `Embeddings` interface into `EmbeddingService` rather than constructing a provider inside the service.
+- Test service behavior with fake or mocked embeddings so unit tests do not require a live provider.
 
 ## Decision record template
 
