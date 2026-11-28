@@ -1,232 +1,191 @@
 # ProcureFlow AI — Architecture
 
-## 1. Project Goal
+## 1. Purpose and Scope
 
-ProcureFlow AI is a portfolio AI Agent that simulates industrial procurement workflows. It evaluates purchase requests, checks business rules, retrieves procurement policies, and requests manager approval when required.
+ProcureFlow AI is a portfolio project for an AI-assisted industrial procurement workflow. It combines conversational information collection, deterministic procurement rules, structured business data, and document-grounded technical knowledge.
 
-All external business systems are simulated. No real purchase is executed.
+The application is a simulation. It does not create real purchase orders, payments, or supplier transactions.
 
-## 2. Technology Stack
+## 2. Technology Status
 
-### Implemented
+### Implemented in the repository
 
-- **Python:** Core application logic
-- **LangGraph:** Workflow orchestration, conditional routing, and human-in-the-loop
-- **LangChain:** LLM integration and structured information extraction
-- **Pydantic:** Data validation and structured models
-- **SQLite + SQLAlchemy:** Persistent business data
-- **pytest:** Automated testing
-- **PyYAML:** YAML frontmatter parsing for document metadata
-- **LangChain Text Splitters + tiktoken:** Structure-aware document chunking and token counting
-### Planned
+- **Python:** Application implementation.
+- **LangGraph:** Procurement and conversation workflow orchestration.
+- **LangChain / langchain-openai:** Chat-model and embedding-model integration.
+- **Pydantic / pydantic-settings:** Domain data validation and environment-based configuration.
+- **SQLite / SQLAlchemy:** Simulated business-data persistence.
+- **PyYAML:** YAML frontmatter parsing.
+- **LangChain Text Splitters / tiktoken:** Heading-aware document chunking and token counting.
+- **pytest:** Automated test suite and test doubles for external dependencies.
 
-- **MCP:** Standardized access to external and simulated tools
-- **FastAPI:** Backend API
-- **Gradio:** Interactive application demo
-- **ChromaDB:** Vector storage and semantic retrieval
-- **Embedding Models:** Convert document chunks into vector representations
-## 3. Project Structure and Main Components
+### Planned or not yet integrated
 
-The application code is organized into the following modules:
+- **ChromaDB or another vector store:** Persistent vector indexing and semantic retrieval.
+- **MCP:** Standardized external tool integration.
+- **FastAPI:** HTTP API layer.
+- **Gradio:** Interactive demo.
+- **Docker and deployment tooling:** Reproducible packaging and deployment.
 
-- **agent/**: LangGraph workflows and their state definitions.
-- **domain/**: Business models, conversation models, and deterministic business rules.
-- **services/**: Application services for conversation processing, inventory, product knowledge, LLM extraction, and purchase suggestions.
-- **database/**: SQLAlchemy models and database connection management.
-- **evaluation/**: Evaluation datasets, metrics, execution, and report generation.
-- **config/**: LLM and application configuration.
-- **cli.py**: Command-line application entry point.
+A library or configuration component being present does not mean the corresponding end-to-end capability is complete. In particular, embedding configuration and an embedding service exist, but vector indexing and semantic retrieval are not yet integrated.
 
-### Architectural Boundaries
+## 3. Codebase Boundaries
 
-- Domain models are independent of database persistence models.
-- Agent workflows coordinate application services and business logic.
-- Services encapsulate specific application operations.
-- Evaluation modules assess LLM extraction performance independently of the main workflow.
-- External integrations must remain simulated until explicitly implemented and authorized.
+The application source is organized by responsibility:
 
-### 3.1 Source Code Layout
-
+```text
 src/procurement_assistant/
 ├── agent/
-├── config/
-├── database/
-├── domain/
-├── evaluation/
+│   ├── conversation/   # Conversation graph, state, routing, and nodes
+│   └── ...             # Procurement workflow
+├── config/             # Provider and model configuration
+├── database/           # SQLAlchemy models and database management
+├── domain/             # Domain models and business rules
+├── evaluation/         # LLM extraction evaluation
 ├── rag/
-│   └── ingestion/
-├── services/
-├── cli.py
-└── __init__.py
+│   ├── embeddings/     # Embedding service
+│   ├── evaluation/     # Retrieval-evaluation datasets and evidence utilities
+│   └── ingestion/      # Document loading, metadata, and chunking
+├── services/           # Application services
+└── cli.py              # Command-line entry point
+```
 
-## 4. Purchase Workflow
+Architectural boundaries:
 
-1. Receive a purchase request.
-2. Check inventory, supplier eligibility, budget, and procurement policies.
-3. Determine whether the request can proceed automatically or requires manager review.
-4. Pause for manager approval when required.
-5. Continue or stop based on the manager's decision.
-6. Record the outcome and relevant business data.
+- Domain rules must not depend on LLM output.
+- Agent graphs orchestrate application operations; they should not become repositories for business logic.
+- Services encapsulate application capabilities behind explicit dependencies.
+- Configuration is centralized and separated by responsibility.
+- External providers should be replaceable and isolated in unit tests.
+- Structured operational facts and unstructured document knowledge use different access paths.
 
-## 5. Safety and Scope
+## 4. Procurement Workflow
 
-- No real purchase orders or payments.
-- Manager approval is required for sensitive or restricted requests.
-- The LLM must not override deterministic business rules.
-- External tools operate in simulation mode.
-- Automated tests verify important business and workflow scenarios.
+The procurement workflow is responsible for evaluating a sufficiently complete purchase request.
 
-## 6. Development Principles
+At a high level it:
 
-- Implement small, testable increments.
-- Run tests before meaningful commits.
-- Keep architecture documentation updated.
-- Add technologies only when they serve a clear project requirement.
-- Production deployment is outside the current scope.
+1. Receives structured request data.
+2. Checks inventory and applicable supplier, budget, and policy constraints.
+3. Determines whether the request can proceed or requires manager review.
+4. Pauses for the required human decision.
+5. Continues or stops according to that decision.
+6. Records the simulated outcome.
 
-## 7. Conversation Workflow
+The LLM may help interpret user language and extract information. It must not override deterministic business rules or authorize a purchase.
 
-The Conversation Workflow collects and validates the information
-required to create a purchase request.
+## 5. Conversation Workflow
 
-It is separate from the Purchase Workflow.
+The conversation workflow is implemented as a LangGraph state graph.
 
-### 7.1 Conversation Models
+### Main components
 
-The conversation layer uses Pydantic models:
+- `state.py`: Defines `ConversationState`, including conversation messages, request data, missing information, clarification fields, status, and message-related state.
+- `router.py`: Selects the next conversation route.
+- `graph.py`: Builds and compiles the graph.
+- `nodes/`: Contains nodes for processing messages, collecting information, handling cancellation, handling unrecognized input, and answering inventory questions.
 
-- `RequestExtraction`: Structured information extracted from a user message.
-- `RequestDraft`: The current draft of the purchase request.
-- `ConversationMessage`: A user or assistant message with a timestamp.
-- `ConversationStatus`: The current status of information collection.
-- `MessageIntent`: The detected intent of a user message.
+### Current routing behavior
 
-### 7.2 Conversation State
+The graph routes processed messages to:
 
-`ConversationState` stores the information needed throughout a conversation:
+- `collect_information`
+- `handle_cancellation`
+- `handle_unrecognized`
+- `answer_question` (currently implemented through the inventory-question node)
+- `handoff_to_procurement` (currently a placeholder route node)
 
-- `conversation_id`: Unique conversation identifier.
-- `messages`: Conversation message history.
-- `request_data`: Current purchase request draft.
-- `missing_information`: Required information that has not been provided.
-- `clarification_fields`: Fields that need user clarification.
-- `status`: Current conversation status.
+The graph and individual nodes exist, but this should not be interpreted as a fully integrated end-to-end conversational procurement experience. Continue to verify each route and its tests as the workflow evolves.
 
-The messages field uses a LangGraph reducer to append new messages
-instead of replacing the existing history.
+The conversation layer and procurement decision workflow have separate responsibilities: collecting information does not approve or execute a purchase.
 
-### 7.3 Conversation Service
+## 6. Configuration and Model Integration
 
-`conversation_service.py` contains the core business logic for
-processing user messages.
+Provider connection settings and model-specific settings are separated.
 
-Its responsibilities include:
+- `config/providers.py` contains shared OpenAI-compatible connection settings such as API key and base URL.
+- `config/embeddings.py` contains embedding-specific model configuration and constructs the embedding model using the provider settings.
+- Chat-model configuration is maintained separately from embedding-model configuration.
 
-1. Merging newly extracted information with the existing request draft.
-2. Preserving previously collected information.
-3. Checking required basic and product-specific attributes.
-4. Detecting ambiguous or conflicting information.
-5. Managing corrections to previously collected values.
-6. Determining whether the request needs more information or is
-   ready for review.
+This separation avoids coupling an embedding model's configuration to chat-specific concerns and supports reuse of provider connection details.
 
-Product-specific required attributes are retrieved from the
-product knowledge database.
+Secrets must be supplied through environment configuration and must never be committed.
 
-### 7.4 Safe Information Updates
+## 7. RAG Architecture
 
-Extracting a new value does not automatically authorize changing
-an existing value.
+The RAG subsystem is being developed to answer questions from category-level and product-specific documents.
 
-When a correction conflicts with previously collected information,
-the existing value is preserved until the correction is confirmed.
+### Knowledge scopes
 
-The `confirmed_corrections` input identifies fields that are
-authorized to be updated.
+- **Category knowledge:** General knowledge associated with a product category.
+- **Product-specific knowledge:** Information associated with an individual product or SKU.
 
-The LLM is not trusted to authorize its own corrections.
+### Ingestion
 
-### 7.5 Current Implementation Scope
-
-The Conversation Service currently receives a structured
-`RequestExtraction` object as input.
-
-LLM-based extraction and the interactive clarification process
-have not yet been integrated.
-
-The service is currently implemented and tested independently.
-Integration with the LangGraph conversation workflow is a
-subsequent development step.
-
-A request marked `READY_FOR_REVIEW` means the required information
-has been collected. It does not mean that the purchase is approved
-or executed.
-
-## 8. Retrieval-Augmented Generation (RAG)
-
-The RAG subsystem provides access to technical product knowledge and supporting procurement documents.
-
-It is designed to support two knowledge scopes:
-
-- **Category Knowledge:** General technical knowledge about product categories, such as industrial motors, pumps, and bearings.
-- **Product-Specific Knowledge:** Technical information associated with a specific product or SKU, such as datasheets and product manuals.
-
-Both knowledge scopes share the same ingestion and retrieval architecture. Metadata is used to distinguish their scope and support filtering.
-
-### 8.1 Document Ingestion
-
-The ingestion pipeline transforms source documents into structured chunks suitable for embedding and retrieval.
-
-The initial implementation includes:
+The current ingestion foundation includes:
 
 - `MarkdownDocumentLoader`: Reads Markdown documents, parses YAML frontmatter, validates metadata, and calculates a SHA-256 content hash.
-- `DocumentMetadata`: Defines the structured metadata associated with each source document.
-- `LoadedDocument`: Represents a validated source document.
-- `DocumentProcessor`: Splits documents into semantically meaningful sections and smaller chunks.
+- `DocumentMetadata` and `LoadedDocument`: Represent validated document metadata and loaded content.
+- `DocumentProcessor`: Splits content by Markdown heading structure and then uses recursive token-aware splitting for oversized sections.
+- Chunk metadata preserves source-document information, section context, and chunk ordering.
 
-### 8.2 Chunking Strategy
+The initial chunking configuration uses a 500-token target and 75-token overlap. These are experimental baseline values, not proven optimal settings.
 
-The processor uses a two-stage strategy:
-
-1. `MarkdownHeaderTextSplitter` separates documents according to their heading structure.
-2. `RecursiveCharacterTextSplitter` splits sections that exceed the configured token limit.
-
-The initial configuration uses:
-
-- Chunk size: 500 tokens
-- Chunk overlap: 75 tokens
-
-These values are experimental baselines and will be evaluated against retrieval quality.
-
-Each chunk preserves its source document metadata, section path, and sequential chunk index.
-
-### 8.3 Knowledge Sources and Trust
-
-Documents are stored under:
+Synthetic documents are stored under:
 
 - `data/documents/category/`
 - `data/documents/product_specific/`
 
-Document metadata identifies the knowledge type, source type, and verification status.
+Synthetic or unverified documents are test material, not authoritative industrial specifications.
 
-Synthetic or unverified documents must not be treated as authoritative technical specifications or used for real industrial purchasing and safety decisions.
+### Embeddings
 
-### 8.4 Planned RAG Components
+The repository contains:
 
-The following components are not implemented yet:
+- Embedding-specific settings in `config/embeddings.py`.
+- An embedding-model factory using shared provider connection settings.
+- `EmbeddingService`, which exposes document and query embedding operations through the LangChain `Embeddings` interface.
 
-- Embedding generation
-- Vector storage and semantic retrieval using ChromaDB
-- Document lifecycle registry
-- Safe document version replacement
-- Retrieval evaluation
+These components provide the embedding boundary. They are not yet connected to a persistent vector index or an end-to-end retrieval pipeline.
 
-### 8.5 Retrieval and Data Boundaries
+### Retrieval evaluation foundation
 
-Structured business information, such as inventory quantities, remains the responsibility of the relational database.
+The RAG evaluation package currently includes dataset models and loading, evidence normalization, and ground-truth evidence resolution utilities. A complete retrieval runner and retrieval-quality metrics remain future work.
 
-Technical knowledge contained in documents is retrieved through RAG.
+### Planned RAG flow
 
-Product-specific specifications must be supported by product-specific sources. General category knowledge must not be used to invent missing specifications for an individual product.
+The intended next stages are:
 
-For questions requiring both structured business data and technical knowledge, the application may combine database queries and document retrieval.
+1. Generate embeddings for processed chunks.
+2. Define the minimum vector-store abstraction required by the application.
+3. Index chunks in a local vector store.
+4. Implement semantic retrieval and metadata filtering.
+5. Evaluate retrieval quality with repeatable datasets and metrics.
+6. Connect document retrieval to the conversation graph.
+
+Structured facts such as inventory quantities must continue to come from relational database queries. RAG is for document-based knowledge. Product-specific claims require product-specific evidence.
+
+## 8. Safety and Trust Boundaries
+
+- No real purchase, payment, or supplier transaction is performed.
+- Deterministic business rules remain authoritative.
+- Sensitive actions require explicit authorization and appropriate human approval.
+- Validate inputs and outputs at application and tool boundaries.
+- Treat retrieved documents and model responses as untrusted data.
+- Do not treat synthetic or unverified technical documents as authoritative specifications.
+- Keep credentials out of source code, logs, and Git history.
+
+## 9. Development Principles
+
+- Implement small, testable increments.
+- Inspect existing code before changing architecture.
+- Introduce dependencies only when a concrete requirement justifies them.
+- Isolate external services from unit tests.
+- Add integration and evaluation tests where unit tests are insufficient.
+- Keep this document aligned with the code that actually exists.
+
+## 10. Related Documentation
+
+- [Development Progress](progress.md)
+- [Architecture Decision Log](decisions.md)
+- [LLM Evaluation](evaluation.md)
